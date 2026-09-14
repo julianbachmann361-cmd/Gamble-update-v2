@@ -2,27 +2,32 @@ name: Build Gamble-update-v2
 
 on:
   push:
-    branches: [ "**" ]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Code auschecken
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: JDK 17 einrichten
+      - name: Java einrichten
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
           java-version: '17'
+          distribution: 'temurin'
 
-      - name: Mit Maven bauen
+      - name: Vault API bereitstellen
+        run: |
+          mkdir -p libs
+          wget -O libs/Vault.jar https://github.com/MilkBowl/VaultAPI/releases/download/1.7.3/Vault.jar
+
+      - name: Maven bauen
         run: mvn -B clean package
 
       - name: Fertiges Jar hochladen
         uses: actions/upload-artifact@v4
         with:
           name: Gamble-update-v2-jar
-          path: target/Gamble-update-v2-*.jar
+          path: target/SimpleGamble-*.jar
