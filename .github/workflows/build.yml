@@ -1,0 +1,28 @@
+name: Build SimpleGamble
+
+on:
+  push:
+    branches: [ "**" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
+
+      - name: JDK 17 einrichten
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Mit Maven bauen
+        run: mvn -B clean package
+
+      - name: Fertiges Jar hochladen
+        uses: actions/upload-artifact@v4
+        with:
+          name: SimpleGamble-jar
+          path: target/SimpleGamble-*.jar
