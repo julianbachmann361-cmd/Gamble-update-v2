@@ -1,0 +1,126 @@
+# ============================================
+#   SimpleGamble - Konfiguration
+# ============================================
+
+# Wirtschaftsanbindung läuft über Vault. Vault selbst speichert kein Geld, sondern
+# leitet nur an dein Economy-Plugin weiter (z.B. EssentialsX). Stelle sicher, dass
+# genau EIN Economy-Plugin aktiv ist, damit Vault und EconomyShopGUI auf denselben
+# Kontostand zugreifen wie SimpleGamble.
+
+bet:
+  min: 10
+  max: 80000
+  allow-decimal: false
+
+# Bis zu diesem Einsatz gelten die besten Odds (low-weight Profil unten bei den
+# Multiplikatoren). Erst DARÜBER verschlechtern sich die Chancen schrittweise,
+# bis bei bet.max (80.000) das schlechteste Odds-Profil (high-weight) erreicht ist.
+bet-scaling:
+  plateau-until: 20000
+
+animation:
+  duration-seconds: 10
+  start-interval-ms: 100
+  end-interval-ms: 700
+  display: ACTIONBAR
+  sound-tick: UI_BUTTON_CLICK
+  sound-win: ENTITY_PLAYER_LEVELUP
+  sound-lose: ENTITY_VILLAGER_NO
+  sound-jackpot: ENTITY_ENDER_DRAGON_GROWL
+
+cooldown-seconds: 3
+
+broadcast:
+  enabled: true
+  min-win-amount: 5000
+
+# ============================================
+#   JACKPOT
+# ============================================
+# Bei JEDEM Einsatz (Gewinn oder Verlust) wandert automatisch ein Prozentsatz
+# des Einsatzes in einen serverweiten Jackpot-Topf. Der Jackpot wird in einer
+# eigenen Datei (jackpot-data.yml) gespeichert und übersteht Server-Neustarts.
+#
+# Zusätzlich zum normalen Multiplikator-Ergebnis gibt es bei jedem /gamble eine
+# unabhängige, sehr seltene Chance, den KOMPLETTEN aktuellen Jackpot-Topf oben
+# drauf zu gewinnen. Wird er gewonnen, geht der Topf danach zurück auf 0 (bzw.
+# auf starting-pool) und füllt sich von da an neu.
+#
+# Die Jackpot-Gewinnchance ist bewusst UNABHÄNGIG von der Einsatzhöhe und von
+# den normalen Multiplikator-Odds - jeder hat die gleiche (winzige) Chance,
+# egal ob er 10 oder 80.000 setzt.
+jackpot:
+  enabled: true
+  # Wie viel Prozent jedes einzelnen Einsatzes in den Topf wandert
+  contribution-percent: 10.0
+  # Wahrscheinlichkeit PRO /gamble, den gesamten Topf zusätzlich zu gewinnen (in Prozent).
+  # 0.05 = 0.05% = im Schnitt 1 von 2000 Versuchen.
+  win-chance-percent: 0.05
+  starting-pool: 0
+
+# ============================================
+#   MULTIPLIKATOREN
+# ============================================
+# Zwei Gewichte-Profile pro Multiplikator: "low-weight" gilt bei Einsatz = bet.min,
+# "high-weight" gilt bei Einsatz = bet.max. Bei allem dazwischen wird linear
+# interpoliert - je höher der Einsatz, desto mehr verschiebt sich die Wahrscheinlichkeit
+# in Richtung des harten (high-weight) Profils. Das sorgt dafür, dass kleine Einsätze
+# spürbar bessere Gewinnchancen haben als der Maximaleinsatz.
+#
+# Mit den Standardwerten hier (gilt für Einsätze BIS bet-scaling.plateau-until, s.o.):
+#   - Auszahlungsquote (RTP) bis 20.000 Einsatz   : ca. 99%  (1% Hausvorteil)
+#   - Auszahlungsquote (RTP) beim Höchsteinsatz   : ca. 91%  (9% Hausvorteil)
+#   - Durchschnitt über alle Einsatzhöhen         : ca. 95%  (5% Hausvorteil)
+# (Zusätzlich zieht der Jackpot-Beitrag oben nochmal 10% jedes Einsatzes ab, siehe
+# jackpot-Sektion - dieses Geld ist aber nicht "verloren", sondern wandert nur an den
+# nächsten Jackpot-Gewinner.)
+# Die tatsächlich berechneten Werte werden beim Serverstart in die Konsole geloggt.
+#
+# x25 / x50 / x100 sind bewusst extrem selten und ändern sich kaum mit der Einsatzhöhe
+# (jeder soll eine kleine reelle Chance auf den großen Wurf haben, unabhängig davon
+# ob er klein oder groß setzt) - nur die "Brot und Butter"-Multiplikatoren (0.9 / 0.7 /
+# 2.5 / 5 / 10) verschieben sich stärker mit der Einsatzhöhe: bei kleinen Einsätzen ist
+# x0.9 (kaum Verlust) der mit Abstand häufigste Ausgang, bei großen Einsätzen wird x0.7
+# (spürbarer Verlust) fast genauso häufig wie x0.9.
+multipliers:
+  - value: 0.9
+    low-weight: 73.363
+    high-weight: 44.329
+  - value: 0.7
+    low-weight: 24.454
+    high-weight: 54.180
+  - value: 2.5
+    low-weight: 1.276
+    high-weight: 0.827
+  - value: 5.0
+    low-weight: 0.491
+    high-weight: 0.318
+  - value: 10.0
+    low-weight: 0.196
+    high-weight: 0.127
+  - value: 25.0
+    low-weight: 0.15
+    high-weight: 0.15
+  - value: 50.0
+    low-weight: 0.05
+    high-weight: 0.05
+  - value: 100.0
+    low-weight: 0.02
+    high-weight: 0.02
+
+messages:
+  prefix: "&8[&6Gamble&8] &r"
+  no-permission: "&cDu hast keine Berechtigung dafür."
+  economy-missing: "&cKein Economy-Plugin gefunden (Vault). Kontaktiere einen Admin."
+  invalid-amount: "&cBitte gib einen gültigen Betrag an, z.B. /gamble 100"
+  min-bet: "&cDer Mindesteinsatz beträgt %min%."
+  max-bet: "&cDer Höchsteinsatz beträgt %max%."
+  not-enough-money: "&cDu hast nicht genug Geld dafür."
+  cooldown: "&cWarte noch %seconds% Sekunden bevor du erneut gamblest."
+  already-gambling: "&cDu gamblest bereits, bitte warte die Animation ab."
+  result-win: "&a&lGEWONNEN! &r&aDu hast x%multiplier% erzielt und &e%amount% &azurückbekommen! (Einsatz: %bet%)"
+  result-loss: "&c&lVERLOREN! &r&cDu hast x%multiplier% erzielt und nur &e%amount% &czurückbekommen. (Einsatz: %bet%)"
+  broadcast-win: "&6%player% &7hat beim Gamble mit x%multiplier% &e%amount% &7gewonnen!"
+  jackpot-win: "&6&l★ JACKPOT! ★ &r&6Du hast zusätzlich den kompletten Jackpot von &e%jackpot% &6gewonnen!"
+  jackpot-broadcast: "&6&l★ JACKPOT! ★ &r&e%player% &6hat gerade den Jackpot von &e%jackpot% &6geknackt!"
+  jackpot-info: "&6Aktueller Jackpot: &e%jackpot%"

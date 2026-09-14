@@ -1,0 +1,30 @@
+name: SimpleGamble
+version: ${project.version}
+main: de.simplegamble.gamble.SimpleGamblePlugin
+api-version: 1.20
+author: SimpleGamble
+description: Einfaches /gamble Plugin mit Vault-Anbindung
+
+depend: [Vault]
+
+commands:
+  gamble:
+    description: Setze Geld ein und gamble
+    usage: /gamble <betrag>
+    permission: simplegamble.use
+  jackpot:
+    description: Zeigt den aktuellen Jackpot-Stand
+    usage: /jackpot
+    permission: simplegamble.use
+  odds:
+    description: Zeigt Gewinnwahrscheinlichkeiten und Hausvorteil
+    usage: /odds
+    permission: simplegamble.use
+
+permissions:
+  simplegamble.use:
+    description: Erlaubt die Nutzung von /gamble
+    default: true
+  simplegamble.reload:
+    description: Erlaubt das Neuladen der Config
+    default: op
